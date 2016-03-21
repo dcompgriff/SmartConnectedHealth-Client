@@ -5,9 +5,16 @@
     tools:context="layout.InsightsFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!--<TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Insights Fragment" />
+        android:text="Insights Fragment" />-->
+
+
+
+    <com.github.mikephil.charting.charts.RadarChart
+        android:id="@+id/meal_radar_chart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </FrameLayout>
