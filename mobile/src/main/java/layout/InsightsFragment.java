@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.Legend.LegendPosition;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -40,8 +39,13 @@ public class InsightsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    // Labels for synthetic spider chart plot.
+    private String[] mParties = new String[]{
+            "Party A", "Party B", "Party C", "Party D", "Party E", "Party F", "Party G", "Party H",
+            "Party I"
+    };
 
-    // Chart variables
+    // UI references.
     private RadarChart mChart;
     //private Typeface tf;
 
@@ -84,24 +88,30 @@ public class InsightsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // Create the spider view, and add it to this fragment's layout.
+        createSpiderView();
+
+    }
+
+    /**
+     * This function creates the spider view, and initializes it with data.
+     * */
+    private void createSpiderView(){
         //Retrieve a reference to the radar chart.
         mChart = (RadarChart) getActivity().findViewById(R.id.meal_radar_chart);
-
         //tf = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
 
         MyMarkerView mv = new MyMarkerView(getActivity(), R.layout.custom_marker_view);
         // set the marker to the chart
         mChart.setMarkerView(mv);
 
-        mChart.invalidate();
         // Setup chart visuals
+        mChart.invalidate();
         mChart.setDescription("Post Meals");
         mChart.setWebLineWidth(1.5f);
         mChart.setWebLineWidthInner(0.75f);
         mChart.setWebAlpha(100);
-
         setData();
-
         mChart.animateXY(
                 1400, 1400,
                 Easing.EasingOption.EaseInOutQuad,
@@ -110,7 +120,6 @@ public class InsightsFragment extends Fragment {
         XAxis xAxis = mChart.getXAxis();
         //xAxis.setTypeface(tf);
         xAxis.setTextSize(9f);
-
         YAxis yAxis = mChart.getYAxis();
         //yAxis.setTypeface(tf);
         yAxis.setLabelCount(5, false);
@@ -118,18 +127,15 @@ public class InsightsFragment extends Fragment {
         yAxis.setAxisMinValue(0f);
 
         Legend l = mChart.getLegend();
-        l.setPosition(LegendPosition.RIGHT_OF_CHART);
+        l.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
         //l.setTypeface(tf);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(5f);
     }
 
-
-
-    private String[] mParties = new String[]{
-            "Party A", "Party B", "Party C", "Party D", "Party E", "Party F", "Party G", "Party H",
-            "Party I"
-    };
+    /**
+     * This function generates synthetic data, and adds it to the spider plot.
+     * */
     public void setData() {
 
         float mult = 150;

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Main Application Color Palete -->
     <color name="colorPrimary">#2196f3</color>
     <color name="colorPrimaryDark">#212121</color>
     <color name="colorAccent">#ff9100</color>
+    <color name="colorShadow">#e0e0e0</color>
+
+    <color name="colorNormal" >#64dd17</color>
+    <color name="colorHigh" >#ff9100</color>
+    <color name="colorDangerous" >#ef5350</color>
+
 </resources>
