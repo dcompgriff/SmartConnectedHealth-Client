@@ -1,5 +1,7 @@
 package layout;
-
+/**
+ * Author: Daniel Griffin
+ * */
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;

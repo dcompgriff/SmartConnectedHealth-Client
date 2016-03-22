@@ -76,16 +76,16 @@
             android:text="You have hit your health target every day this week, Congratulations!"/>
 
         <FrameLayout
-            android:layout_width="300dp"
+            android:layout_width="350dp"
             android:layout_height="300dp"
             android:layout_margin="10dp"
             android:layout_gravity="center"
             android:elevation="2dp">
-            <TextView
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/glucose_peak_bar_chart"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:editable="false"
-                android:background="@color/colorShadow"/>
+                android:layout_height="match_parent" />
         </FrameLayout>
 
         <FrameLayout

@@ -1,5 +1,7 @@
 package com.sch.trustworthysystems.smartconnectedhealth_client;
-
+/**
+ * Author: Daniel Griffin
+ * */
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;

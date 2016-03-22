@@ -1,12 +1,16 @@
 package layout;
-
+/**
+ * Author: Daniel Griffin
+ * */
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
@@ -16,10 +20,47 @@ import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.sch.trustworthysystems.smartconnectedhealth_client.MyYAxisValueFormatter;
 import com.sch.trustworthysystems.smartconnectedhealth_client.R;
 import com.sch.trustworthysystems.smartconnectedhealth_client.view.MyMarkerView;
 
 import java.util.ArrayList;
+
+// Imports for the spider plot.
+// Imports for the bar chart.
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.Legend.LegendForm;
+import com.github.mikephil.charting.components.Legend.LegendPosition;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.XAxis.XAxisPosition;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.components.YAxis.AxisDependency;
+import com.github.mikephil.charting.components.YAxis.YAxisLabelPosition;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.filter.Approximator;
+import com.github.mikephil.charting.data.filter.Approximator.ApproximatorType;
+import com.github.mikephil.charting.formatter.YAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.interfaces.datasets.IDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 //Try to import one of the plotting libraries.
 
@@ -47,6 +88,7 @@ public class InsightsFragment extends Fragment {
 
     // UI references.
     private RadarChart mChart;
+    private BarChart mBarChart;
     //private Typeface tf;
 
     public InsightsFragment() {
@@ -88,10 +130,75 @@ public class InsightsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // Create the bar graph view, and add it to this fragment's layout.
+        createGlucosePeakBarChart();
         // Create the spider view, and add it to this fragment's layout.
         createSpiderView();
+    }
+
+    /**
+     * This function creates the bar graph view, and initializes it with data.
+     * */
+    private void createGlucosePeakBarChart(){
+        //Retrieve a reference to the bar chart.
+        mBarChart = (BarChart) getActivity().findViewById(R.id.glucose_peak_bar_chart);
+
+        //Configure properties of the bar chart.
+        mBarChart.setDrawBarShadow(false);
+        mBarChart.setDrawValueAboveBar(false);
+        mBarChart.setDescription("Max Blood Glucose By Day");
+        mBarChart.setDrawValueAboveBar(false);
+        mBarChart.setDescriptionPosition(500, 25);
+        mBarChart.setMaxVisibleValueCount(7);
+        mBarChart.setPinchZoom(false);
+        mBarChart.setScaleEnabled(false);
+        mBarChart.setDrawGridBackground(false);
+
+        // Set the properties of the x-axis.
+        XAxis xAxis = mBarChart.getXAxis();
+        xAxis.setPosition(XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setSpaceBetweenLabels(1);
+
+        // Set the properties of the y-axis.
+        YAxisValueFormatter custom = new MyYAxisValueFormatter();
+        YAxis leftAxis = mBarChart.getAxisLeft();
+        leftAxis.setLabelCount(8, false);
+        leftAxis.setValueFormatter(custom);
+        leftAxis.setPosition(YAxisLabelPosition.OUTSIDE_CHART);
+        leftAxis.setSpaceTop(15f);
+        leftAxis.setAxisMinValue(0f); // this replaces setStartAtZero(true)
+        leftAxis.setDrawGridLines(false);
+        // Set the properties of the right y-axis
+        YAxis rightAxis = mBarChart.getAxisRight();
+        rightAxis.setLabelCount(8, false);
+        rightAxis.setValueFormatter(custom);
+        rightAxis.setPosition(YAxisLabelPosition.OUTSIDE_CHART);
+        rightAxis.setSpaceTop(15f);
+        rightAxis.setAxisMinValue(0f); // this replaces setStartAtZero(true)
+        rightAxis.setDrawGridLines(false);
+
+
+
+        // Set the properties of the legend.
+        Legend l = mBarChart.getLegend();
+        l.setPosition(LegendPosition.BELOW_CHART_LEFT);
+        l.setForm(LegendForm.SQUARE);
+        l.setFormSize(9f);
+        l.setTextSize(11f);
+        l.setXEntrySpace(4f);
+        // l.setExtra(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
+        // "def", "ghj", "ikl", "mno" });
+        // l.setCustom(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
+        // "def", "ghj", "ikl", "mno" });
+
+        // Set the bars to animate to their proper value in 3 seconds.
+        mBarChart.animateY(1500);
+
+        setBarChartData(7, 50);
 
     }
+
 
     /**
      * This function creates the spider view, and initializes it with data.
@@ -111,7 +218,7 @@ public class InsightsFragment extends Fragment {
         mChart.setWebLineWidth(1.5f);
         mChart.setWebLineWidthInner(0.75f);
         mChart.setWebAlpha(100);
-        setData();
+        setSpiderData();
         mChart.animateXY(
                 1400, 1400,
                 Easing.EasingOption.EaseInOutQuad,
@@ -134,9 +241,52 @@ public class InsightsFragment extends Fragment {
     }
 
     /**
+     * This function generates synthetic data, and adds it to the bar chart plot.
+     *
+     * TODO:
+     * 1) Retrieve the date for the past few days, up to the beginning of the week.
+     * 2) Retreieve the glucose peaks for the past week.
+     * 3) Display the glucose values with colors based on the levels.
+     *
+     * */
+    public void setBarChartData(int count, float range) {
+            // Create an array of month labels.
+            String[] mMonths = new String[]{"M", "T", "W", "Th", "F", "Sa", "Su", "M", "T", "W", "Th", "F", "Sa", "Su" };
+            // Create an x axis array of months.
+            ArrayList<String> xVals = new ArrayList<String>();
+            for (int i = 0; i < count; i++) {
+                xVals.add(mMonths[i % 12]);
+            }
+            // Create a y axis array of y values. (Currently random values).
+            ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
+            for (int i = 0; i < count; i++) {
+                float mult = (range + 1);
+                float val = (float) (Math.random() * mult);
+                yVals1.add(new BarEntry(val, i));
+            }
+
+            // Create an object for holding metadata related to the y-values of the bars.
+            BarDataSet set1 = new BarDataSet(yVals1, "Glucose Peaks");
+            set1.setBarSpacePercent(35f);
+            // Set the color of the bars in the bar chart.
+            set1.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorPrimary));
+
+            //Add the bars to the set of y-values to be plotted.
+            ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+            dataSets.add(set1);
+
+            //Add an x axis value for all of the bars to be plotted
+            BarData data = new BarData(xVals, dataSets);
+            data.setValueTextSize(10f);
+            //data.setValueTypeface(mTf);
+
+            mBarChart.setData(data);
+    }
+
+    /**
      * This function generates synthetic data, and adds it to the spider plot.
      * */
-    public void setData() {
+    public void setSpiderData() {
 
         float mult = 150;
         int cnt = 9;
