@@ -9,12 +9,36 @@
         android:layout_height="2000dp"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/im2cal_button"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/im2cal_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_margin="10dp"
+                android:layout_alignParentLeft="true"
+                android:background="@android:drawable/ic_menu_camera"/>
+            <Button
+                android:id="@+id/im2cal_gallery_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_margin="10dp"
+                android:layout_below="@id/im2cal_button"
+                android:background="@android:drawable/ic_menu_gallery"/>
+            <ImageView android:id="@+id/im2cal_image_view"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:layout_toRightOf="@id/im2cal_button"
+                android:background="@color/colorShadow"
+                android:baselineAlignBottom="false" />
+        </RelativeLayout>
+
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:text="Im2Cal" />
+            android:id="@+id/imageView" />
 
         <DatePicker
             android:id="@+id/meal_date_picker"
@@ -42,7 +66,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:elevation="3dp">
             <!-- First Row -->
             <LinearLayout
                 android:orientation="horizontal"

@@ -2,10 +2,18 @@ package layout;
 /**
  * Author: Daniel Griffin
  * */
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +22,7 @@ import android.webkit.HttpAuthHandler;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -23,6 +32,8 @@ import com.sch.trustworthysystems.smartconnectedhealth_client.R;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +41,7 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,18 +60,24 @@ public class DataInputFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    private static final int CAMERA_INTENT_CODE = 0;
+    private static final int GALLERY_INTENT_CODE = 1;
+
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    //Private data references
+    // Private data references
     private HashMap<String, Double> mealMap = new HashMap<String, Double>();
+    private String previousImagePath = "";
 
     // UI references
     private Button mIm2CalButton;
+    private Button mIm2CalGalleryButton;
     private Button mAddMealButton;
     private DatePicker mMealDatePicker;
     private TimePicker mMealTimePicker;
+    private ImageView mIm2CalImageView;
     // Meal Input Edit Text
     private EditText mMealCaloriesEditText;
     private EditText mMealCarbsEditText;
@@ -112,9 +130,11 @@ public class DataInputFragment extends Fragment {
 
         // Get references to the UI elements.
         mIm2CalButton = (Button) getActivity().findViewById(R.id.im2cal_button);
+        mIm2CalGalleryButton = (Button) getActivity().findViewById(R.id.im2cal_gallery_button);
         mAddMealButton = (Button) getActivity().findViewById(R.id.add_meal_button);
         mMealDatePicker = (DatePicker) getActivity().findViewById(R.id.meal_date_picker);
         mMealTimePicker = (TimePicker) getActivity().findViewById(R.id.meal_time_picker);
+        mIm2CalImageView = (ImageView) getActivity().findViewById(R.id.im2cal_image_view);
         // Get references to the meal UI edit text inputs.
         mMealCaloriesEditText = (EditText) getActivity().findViewById(R.id.meal_calories_edit_text);
         mMealCarbsEditText = (EditText) getActivity().findViewById(R.id.meal_carbs_edit_text);
@@ -129,7 +149,33 @@ public class DataInputFragment extends Fragment {
         mIm2CalButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Work in progress...", Toast.LENGTH_SHORT).show();
+
+                // Set file path parameters in camera intent.
+                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                // Create a unique file name, and save the image path to be used in the onActivityResult() function to get
+                // the saved image.
+                Date mDate = new Date();
+                String currentDate = mDate.toString();
+                currentDate = currentDate.replaceAll(" ", "_");
+                File output = new File(dir, currentDate + ".jpg");
+                previousImagePath = output.getAbsolutePath();
+
+                // Make an intent to start the camera to take an image of a meal.
+                Intent cameraIntent = new Intent();
+                cameraIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(output));
+                startActivityForResult(cameraIntent, CAMERA_INTENT_CODE);
+
+                //Toast.makeText(getContext(), "Work in progress...", Toast.LENGTH_SHORT).show();
+            }
+        });
+        mIm2CalGalleryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent galleryIntent = new Intent();
+                galleryIntent.setType("image/*");
+                galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(galleryIntent, "Select Image."), GALLERY_INTENT_CODE);
             }
         });
         mAddMealButton.setOnClickListener(new View.OnClickListener() {
@@ -191,6 +237,53 @@ public class DataInputFragment extends Fragment {
         //AsyncTask<String, Integer, String> postTask = new PostMealDataTask();
         //postTask.execute(mealMapString);
         Toast.makeText(getContext(), "JSON: " + mealMapString, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * This method is called when an activity started through an intent using startActivityForResult() returns.
+     * It is currently used to retrieve the result of an image capture.
+     * */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CAMERA_INTENT_CODE){
+            if (resultCode == getActivity().RESULT_OK){
+                // Get the image url returned from the intent.
+                Uri imageUri = Uri.fromFile(new File(previousImagePath));
+
+                // Make a bitmap and options object to load the saved image into memory.
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = false;
+                options.inSampleSize = 4;
+
+                String path = imageUri.getPath();
+                String encodedPath = imageUri.getEncodedPath();
+                String pathToString = imageUri.toString();
+
+                mIm2CalImageView.setImageURI(null);
+                mIm2CalImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                mIm2CalImageView.setImageBitmap(BitmapFactory.decodeFile(imageUri.getPath(), options));
+                //mIm2CalImageView.setImageURI(null);
+                //mIm2CalImageView.setImageURI(imageUri);
+                mIm2CalImageView.postInvalidate();
+            }
+        }else if (requestCode == GALLERY_INTENT_CODE){
+            if (resultCode == getActivity().RESULT_OK){
+                // Get the absolute file path from the media store uri.
+                Cursor c = getActivity().getContentResolver().query(data.getData(),null,null,null,null);
+                c.moveToNext();
+                String imagePath = c.getString(c.getColumnIndex(MediaStore.MediaColumns.DATA));
+                c.close();
+
+                // Load the bitmap and set it in the image view.
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = false;
+                options.inSampleSize = 4;
+                mIm2CalImageView.setImageBitmap(BitmapFactory.decodeFile(imagePath , options));
+            }
+        }
+
+
+
     }
 
     private class PostMealDataTask extends AsyncTask<String, Integer, String>{
