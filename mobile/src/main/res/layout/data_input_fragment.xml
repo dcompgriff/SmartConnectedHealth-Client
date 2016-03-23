@@ -1,13 +1,278 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="layout.DataInputFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Data Input Fragment" />
+        android:layout_height="2000dp"
+        android:orientation="vertical">
 
-</FrameLayout>
+        <Button
+            android:id="@+id/im2cal_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Im2Cal" />
+
+        <DatePicker
+            android:id="@+id/meal_date_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:headerBackground="@color/colorPrimary"
+            android:dayOfWeekBackground="@color/colorAccent"
+            android:yearListSelectorColor="@color/colorAccent"
+            android:layout_margin="10dp">
+        </DatePicker>
+
+        <TimePicker
+            android:id="@+id/meal_time_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:headerBackground="@color/colorPrimary"
+            android:numbersBackgroundColor="@color/colorPrimary"
+            android:amPmBackgroundColor="@color/colorAccent"
+            android:numbersTextColor="#ffffff"
+            android:amPmTextColor="#ffffff"
+            android:layout_margin="10dp" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <!-- First Row -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Calories" />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:layout_column="1"
+                    android:layout_row="0"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Carbs"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Cholest" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                <EditText
+                    android:id="@+id/meal_calories_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+                <EditText
+                    android:id="@+id/meal_carbs_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+                <EditText
+                    android:id="@+id/meal_cholest_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+            </LinearLayout>
+
+            <!-- Second Row -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Fat"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Fiber"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:layout_margin="@dimen/meal_label_margin"
+                    android:textSize="@dimen/meal_label_text_size"
+                    android:paddingLeft="@dimen/meal_label_padding"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:text="Protein"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                <EditText
+                    android:id="@+id/meal_fat_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+                <EditText
+                    android:id="@+id/meal_fiber_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+                <EditText
+                    android:id="@+id/meal_protein_edit_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".3"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center|fill_horizontal"
+                    android:inputType="numberDecimal"
+                    android:text="0"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".5"
+                        android:layout_margin="@dimen/meal_label_margin"
+                        android:textSize="@dimen/meal_label_text_size"
+                        android:paddingLeft="@dimen/meal_label_padding"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center|fill_horizontal"
+                        android:text="Sodium"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".5"
+                        android:layout_margin="@dimen/meal_label_margin"
+                        android:textSize="@dimen/meal_label_text_size"
+                        android:paddingLeft="@dimen/meal_label_padding"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center|fill_horizontal"
+                        android:text="Sugars"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:weightSum="1"
+                android:gravity="center">
+                    <EditText
+                        android:id="@+id/meal_sodium_edit_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".5"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center|fill_horizontal"
+                        android:inputType="numberDecimal"
+                        android:text="0"/>
+                    <EditText
+                        android:id="@+id/meal_sugars_edit_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight=".5"
+                        android:gravity="center_horizontal"
+                        android:layout_gravity="center|fill_horizontal"
+                        android:inputType="numberDecimal"
+                        android:text="0"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left">
+                <Button android:id="@+id/add_meal_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="Add Meal"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="70dp"
+            android:editable="false"
+            android:background="@color/colorShadow"/>
+
+    </LinearLayout>
+</ScrollView>
