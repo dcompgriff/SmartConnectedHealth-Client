@@ -15,6 +15,7 @@ public class MyYAxisValueFormatter implements YAxisValueFormatter {
 
     @Override
     public String getFormattedValue(float value, YAxis yAxis) {
-        return mFormat.format(value) + " mg/dL";
+        //return mFormat.format(value) + " mg/dL";
+        return "";
     }
 }
