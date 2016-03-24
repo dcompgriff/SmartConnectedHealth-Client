@@ -281,9 +281,6 @@ public class DataInputFragment extends Fragment {
                 mIm2CalImageView.setImageBitmap(BitmapFactory.decodeFile(imagePath , options));
             }
         }
-
-
-
     }
 
     private class PostMealDataTask extends AsyncTask<String, Integer, String>{
