@@ -2,6 +2,7 @@ package layout;
 /**
  * Author: Daniel Griffin
  * */
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -20,11 +21,29 @@ import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.sch.trustworthysystems.smartconnectedhealth_client.MyYAxisValueFormatter;
 import com.sch.trustworthysystems.smartconnectedhealth_client.R;
 import com.sch.trustworthysystems.smartconnectedhealth_client.view.MyMarkerView;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+
+import com.google.gson.JsonParser;
 
 // Imports for the spider plot.
 // Imports for the bar chart.
@@ -36,6 +55,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -62,7 +82,13 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
-//Try to import one of the plotting libraries.
+import org.json.JSONObject;
+
+
+class RefreshRequest {
+    String timestamp;
+}
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -86,10 +112,13 @@ public class InsightsFragment extends Fragment {
             "Party I"
     };
 
+    private String[] class_status = new String[] {"Normal", "High", "Dangerous"};
+
     // UI references.
     private RadarChart mChart;
     private BarChart mBarChart;
-    //private Typeface tf;
+    private ImageButton refreshButton;
+    private TextView outputClass;
 
     public InsightsFragment() {
         // Required empty public constructor
@@ -134,6 +163,9 @@ public class InsightsFragment extends Fragment {
         createGlucosePeakBarChart();
         // Create the spider view, and add it to this fragment's layout.
         createSpiderView();
+
+        // Create refresh button actions
+        setupRefreshComponents();
     }
 
     /**
@@ -195,7 +227,8 @@ public class InsightsFragment extends Fragment {
         // Set the bars to animate to their proper value in 3 seconds.
         mBarChart.animateY(1500);
 
-        setBarChartData(7, 50);
+        // 7 values, with one of three classes
+        setBarChartData(7, 3);
 
     }
 
@@ -259,21 +292,30 @@ public class InsightsFragment extends Fragment {
             }
             // Create a y axis array of y values. (Currently random values).
             ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
-            for (int i = 0; i < count; i++) {
-                float mult = (range + 1);
-                float val = (float) (Math.random() * mult);
-                yVals1.add(new BarEntry(val, i));
+            for (int i = 0; i < count / 1.5; i++) {
+                yVals1.add(new BarEntry(1, i));
+            }
+
+            ArrayList<BarEntry> yVals2 = new ArrayList<BarEntry>();
+            for (int i = (int) (count / 1.5) + 1; i < count; i++) {
+                yVals2.add(new BarEntry(2, i));
             }
 
             // Create an object for holding metadata related to the y-values of the bars.
-            BarDataSet set1 = new BarDataSet(yVals1, "Glucose Peaks");
+            BarDataSet set1 = new BarDataSet(yVals1, "Normal");
             set1.setBarSpacePercent(35f);
             // Set the color of the bars in the bar chart.
-            set1.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorPrimary));
+            set1.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorNormal));
+
+            BarDataSet set2 = new BarDataSet(yVals2, "High");
+            set2.setBarSpacePercent(35f);
+            // Set the color of the bars in the bar chart.
+            set2.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorHigh));
 
             //Add the bars to the set of y-values to be plotted.
             ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
             dataSets.add(set1);
+            dataSets.add(set2);
 
             //Add an x axis value for all of the bars to be plotted
             BarData data = new BarData(xVals, dataSets);
@@ -336,6 +378,38 @@ public class InsightsFragment extends Fragment {
         mChart.invalidate();
     }
 
+    private void setupRefreshComponents() {
+        refreshButton = (ImageButton) getActivity().findViewById(R.id.refreshButton);
+        outputClass = (TextView) getActivity().findViewById(R.id.outputClass);
+
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                refreshGlucosePeak();
+            }
+        });
+
+        refreshGlucosePeak();
+    }
+
+    private void refreshGlucosePeak() {
+        // Get current time as datestring
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+        String dateString = df.format(new Date());
+
+        // Build Json response
+        RefreshRequest refreshRequest = new RefreshRequest();
+        refreshRequest.timestamp = dateString;
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        String refreshMapString = gson.toJson(refreshRequest);
+
+        // Call AsynTask
+        RefreshPeakTask refreshPeakTask = new RefreshPeakTask();
+        refreshPeakTask.execute(refreshMapString);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -346,6 +420,78 @@ public class InsightsFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    private class RefreshPeakTask extends AsyncTask<String, Integer, Integer>{
+        /**
+         * This method sets up the work to to in the background.
+         * */
+        @Override
+        protected Integer doInBackground(String... strings) {
+            // Set up connection to the server to post data.
+            URL url = null;
+            try {
+                url = new URL("http://104.236.167.62:5000/get/glucose/");
+            } catch (MalformedURLException e){
+                Toast.makeText(getContext(), "Malformed URL exception for submitting meal.", Toast.LENGTH_SHORT).show();
+                return null;
+            }
+            // Create the url object to call the http service.
+            HttpURLConnection urlConnection = null;
+            try {
+                // Open the url connection.
+                urlConnection = (HttpURLConnection) url.openConnection();
+                // Indicate that the url stream is an output, and that the output length is unknown.
+                urlConnection.setDoOutput(true);
+                urlConnection.setDoInput(true);
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(urlConnection.getOutputStream()));
+
+                // WRITE THE OUTPUT TO THE STREAM.
+                System.out.println(strings[0]);
+                out.write(strings[0]);
+                out.flush();
+
+
+                // Create input stream to read the response.
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String decodedString;
+                String jsonString = "";
+                while ((decodedString = in.readLine()) != null) {
+                    System.out.println(decodedString);
+                    jsonString += decodedString;
+                }
+
+                JsonObject element = new JsonParser().parse(jsonString).getAsJsonObject();
+                return element.getAsJsonPrimitive("output_class").getAsInt();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+        }
+
+        protected void onPostExecute(Integer result) {
+            if (result != null) {
+                Toast.makeText(getContext(), "Successfully refreshed glucose peak!", Toast.LENGTH_LONG).show();
+                outputClass.setText(class_status[result]);
+                if (result == 0) {
+                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorNormal));
+                } else if (result == 1) {
+                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorHigh));
+                } else if (result == 2) {
+                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorDangerous));
+                } else {
+                    Log.w("POST", String.format("Error in result. Result was %d", result));
+                }
+            } else {
+                Toast.makeText(getContext(), "Error refreshing peak.", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 }
