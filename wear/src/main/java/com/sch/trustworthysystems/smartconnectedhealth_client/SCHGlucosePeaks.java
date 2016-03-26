@@ -25,6 +25,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,6 +33,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
+import android.view.WindowInsets;
 
 import java.lang.ref.WeakReference;
 import java.util.TimeZone;
@@ -42,6 +44,8 @@ import java.util.concurrent.TimeUnit;
  * devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient mode.
  */
 public class SCHGlucosePeaks extends CanvasWatchFaceService {
+    private static final Typeface NORMAL_TYPEFACE =
+            Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
     /**
      * Update rate in milliseconds for interactive mode. We update once a second to advance the
      * second hand.
@@ -82,7 +86,7 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
         final Handler mUpdateTimeHandler = new EngineHandler(this);
         boolean mRegisteredTimeZoneReceiver = false;
         Paint mBackgroundPaint;
-        Paint mHandPaint;
+        Paint mTextPaint;
         boolean mAmbient;
         Time mTime;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
@@ -93,6 +97,9 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
             }
         };
         int mTapCount;
+
+        float mXOffset;
+        float mYOffset;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -111,16 +118,16 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
                     .setAcceptsTapEvents(true)
                     .build());
 
+
             Resources resources = SCHGlucosePeaks.this.getResources();
+
+            mYOffset = resources.getDimension(R.dimen.digital_y_offset);
 
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(resources.getColor(R.color.background));
 
-            mHandPaint = new Paint();
-            mHandPaint.setColor(resources.getColor(R.color.analog_hands));
-            mHandPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
-            mHandPaint.setAntiAlias(true);
-            mHandPaint.setStrokeCap(Paint.Cap.ROUND);
+            mTextPaint = new Paint();
+            mTextPaint = createTextPaint(resources.getColor(R.color.digital_text));
 
             mTime = new Time();
         }
@@ -129,6 +136,14 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
             super.onDestroy();
+        }
+
+        private Paint createTextPaint(int textColor) {
+            Paint paint = new Paint();
+            paint.setColor(textColor);
+            paint.setTypeface(NORMAL_TYPEFACE);
+            paint.setAntiAlias(true);
+            return paint;
         }
 
         @Override
@@ -149,7 +164,7 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
-                    mHandPaint.setAntiAlias(!inAmbientMode);
+                    mTextPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -191,37 +206,18 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
             } else {
-                canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mBackgroundPaint);
+
+                canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
 
-            // Find the center. Ignore the window insets so that, on round watches with a
-            // "chin", the watch face is centered on the entire screen, not just the usable
-            // portion.
-            float centerX = bounds.width() / 2f;
-            float centerY = bounds.height() / 2f;
+            // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
+            mTime.setToNow();
+            String text = mAmbient
+                    ? String.format("%d:%02d", mTime.hour, mTime.minute)
+                    : String.format("%d:%02d:%02d", mTime.hour, mTime.minute, mTime.second);
+            canvas.drawText(text, mXOffset, mYOffset, mTextPaint);
 
-            float secRot = mTime.second / 30f * (float) Math.PI;
-            int minutes = mTime.minute;
-            float minRot = minutes / 30f * (float) Math.PI;
-            float hrRot = ((mTime.hour + (minutes / 60f)) / 6f) * (float) Math.PI;
 
-            float secLength = centerX - 20;
-            float minLength = centerX - 40;
-            float hrLength = centerX - 80;
-
-            if (!mAmbient) {
-                float secX = (float) Math.sin(secRot) * secLength;
-                float secY = (float) -Math.cos(secRot) * secLength;
-                canvas.drawLine(centerX, centerY, centerX + secX, centerY + secY, mHandPaint);
-            }
-
-            float minX = (float) Math.sin(minRot) * minLength;
-            float minY = (float) -Math.cos(minRot) * minLength;
-            canvas.drawLine(centerX, centerY, centerX + minX, centerY + minY, mHandPaint);
-
-            float hrX = (float) Math.sin(hrRot) * hrLength;
-            float hrY = (float) -Math.cos(hrRot) * hrLength;
-            canvas.drawLine(centerX, centerY, centerX + hrX, centerY + hrY, mHandPaint);
         }
 
         @Override
@@ -258,6 +254,21 @@ public class SCHGlucosePeaks extends CanvasWatchFaceService {
             }
             mRegisteredTimeZoneReceiver = false;
             SCHGlucosePeaks.this.unregisterReceiver(mTimeZoneReceiver);
+        }
+
+        @Override
+        public void onApplyWindowInsets(WindowInsets insets) {
+            super.onApplyWindowInsets(insets);
+
+            // Load resources that have alternate values for round watches.
+            Resources resources = SCHGlucosePeaks.this.getResources();
+            boolean isRound = insets.isRound();
+            mXOffset = resources.getDimension(isRound
+                    ? R.dimen.digital_x_offset_round : R.dimen.digital_x_offset);
+            float textSize = resources.getDimension(isRound
+                    ? R.dimen.digital_text_size_round : R.dimen.digital_text_size);
+
+            mTextPaint.setTextSize(textSize);
         }
 
         /**
