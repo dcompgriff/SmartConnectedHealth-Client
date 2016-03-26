@@ -43,30 +43,30 @@
                 <ImageButton android:layout_column="0"
                     android:layout_width="80dp"
                     android:layout_height="100dp"
-                    android:src="@mipmap/dan"
+                    android:src="@drawable/griffind"
                     android:cropToPadding="false"
                     android:contextClickable="false"
                     android:scaleType="fitCenter"
-                    android:background="null" />
+                    android:background="@null" />
                 <ImageButton android:layout_column="1"
                     android:layout_width="80dp"
                     android:layout_height="100dp"
-                    android:src="@mipmap/jeff"
+                    android:src="@drawable/nainaparampilj"
                     android:scaleType="fitCenter"
-                    android:background="null" />
+                    android:background="@null" />
                 <ImageButton android:layout_column="2"
                     android:layout_width="80dp"
                     android:layout_height="100dp"
-                    android:src="@mipmap/matt"
+                    android:src="@drawable/nicholsm"
                     android:scaleType="fitCenter"
-                    android:background="null" />
+                    android:background="@null" />
                 <ImageButton android:layout_column="3"
                     android:layout_width="80dp"
                     android:layout_height="100dp"
-                    android:src="@mipmap/maurice"
+                    android:src="@drawable/abneym"
                     android:scaleType="fitCenter"
                     android:visibility="visible"
-                    android:background="null" />
+                    android:background="@null" />
             </GridLayout>
 
             <LinearLayout
