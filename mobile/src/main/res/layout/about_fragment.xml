@@ -7,8 +7,9 @@
 
     <!-- TODO: Update blank fragment layout -->
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="2000dp"
         android:text="About Fragment."
         android:weightSum="1">
 
@@ -162,6 +163,13 @@
                 android:text="Special acknowledgment to our advisor, Dr. Eric Rozier. The group may be emailed at (griffid6, nainapjj, nicholm7, abneyma)@mail.uc.edu"
                 android:id="@+id/textView12" />
         </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="70dp"
+            android:editable="false"
+            android:background="@color/colorShadow"/>
 
     </LinearLayout>
 
