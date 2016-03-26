@@ -1,13 +1,168 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="layout.AboutFragment">
+    tools:context="layout.AboutFragment"
+    android:fillViewport="true">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="About Fragment." />
+        android:layout_height="wrap_content"
+        android:text="About Fragment."
+        android:weightSum="1">
 
-</FrameLayout>
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.37"
+            android:weightSum="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="About Us"
+                android:textSize="30dp"
+                android:paddingBottom="10dp"
+                android:id="@+id/textView2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Team Members"
+                android:id="@+id/textView"
+                android:textColor="#000000" />
+
+            <GridLayout
+                android:layout_width="380dp"
+                android:layout_height="114dp"
+                android:layout_gravity="center_horizontal">
+                <ImageButton android:layout_column="0"
+                    android:layout_width="80dp"
+                    android:layout_height="100dp"
+                    android:src="@mipmap/dan"
+                    android:cropToPadding="false"
+                    android:contextClickable="false"
+                    android:scaleType="fitCenter"
+                    android:background="null" />
+                <ImageButton android:layout_column="1"
+                    android:layout_width="80dp"
+                    android:layout_height="100dp"
+                    android:src="@mipmap/jeff"
+                    android:scaleType="fitCenter"
+                    android:background="null" />
+                <ImageButton android:layout_column="2"
+                    android:layout_width="80dp"
+                    android:layout_height="100dp"
+                    android:src="@mipmap/matt"
+                    android:scaleType="fitCenter"
+                    android:background="null" />
+                <ImageButton android:layout_column="3"
+                    android:layout_width="80dp"
+                    android:layout_height="100dp"
+                    android:src="@mipmap/maurice"
+                    android:scaleType="fitCenter"
+                    android:visibility="visible"
+                    android:background="null" />
+            </GridLayout>
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="39dp">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp">
+
+                    <TextView
+                        android:layout_width="84dp"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Daniel Griffin (CompE)"
+                        android:textSize="10dp"
+                        android:id="@+id/textView3"
+                        android:paddingRight="25dp"
+                        android:paddingLeft="3dp" />
+
+                    <TextView
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Jeff Nainaparampil (CS)"
+                        android:textSize="10dp"
+                        android:id="@+id/textView4" />
+
+                    <TextView
+                        android:layout_width="82dp"
+                        android:layout_height="match_parent"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Matthew Nichols (CompE)"
+                        android:textSize="10dp"
+                        android:id="@+id/textView5" />
+
+                    <TextView
+                        android:layout_width="80dp"
+                        android:layout_height="36dp"
+                        android:textAppearance="?android:attr/textAppearanceSmall"
+                        android:text="Maurice Abney (CS)"
+                        android:textSize="10dp"
+                        android:id="@+id/textView6" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Our Motivation"
+                android:id="@+id/textView8"
+                android:paddingTop="10dp"
+                android:textColor="#080808" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Regularly elevated blood glucose levels of +140mg/dL may damage the pancreas, as well as cause type 2 diabetes, which affects roughly 23.6 million Americans. However, healthy lifestyle choices including diet and exercise can prevent these peaks and the onset of diabetes. Being able to accurately measure blood glucose levels is a necessity in issuing a proper diet. Unfortunately, the most common ways to measure blood glucose can be both invasive and inconvenient."
+                android:id="@+id/textView7"
+                android:layout_weight="0.06" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Our Goal"
+                android:id="@+id/textView9"
+                android:textColor="#000000"
+                android:paddingTop="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Our goal for this application is to perform intelligent feature extraction from consumer health wearables and meal records, giving us the ability to predict peak glucose levels without drawing blood. We then present this information back to the consumer in a relatable way that could inspire lifestyle changes that provide healthy, diabetes-free lives. "
+                android:id="@+id/textView10" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Our Contacts"
+                android:id="@+id/textView11"
+                android:textColor="#000000"
+                android:paddingTop="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Special acknowledgment to our advisor, Dr. Eric Rozier. The group may be emailed at (griffid6, nainapjj, nicholm7, abneyma)@mail.uc.edu"
+                android:id="@+id/textView12" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
