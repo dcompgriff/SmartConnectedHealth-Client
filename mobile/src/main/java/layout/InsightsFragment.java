@@ -116,8 +116,6 @@ public class InsightsFragment extends Fragment {
             "Party I"
     };
 
-    //private String[] class_status = new String[] {"Normal", "High", "Dangerous"};
-
     // UI references.
     private DecoView arcView;
     private RadarChart mChart;
@@ -445,7 +443,7 @@ public class InsightsFragment extends Fragment {
 
         // Build Json response
         RefreshRequest refreshRequest = new RefreshRequest();
-        refreshRequest.timestamp = "2015-08-06 18:05";//dateString;
+        refreshRequest.timestamp = "2015-08-06 18:05:54";//dateString;
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -524,9 +522,9 @@ public class InsightsFragment extends Fragment {
 
                 JsonObject elements = new JsonParser().parse(jsonString).getAsJsonObject();
 
-                float Normal = elements.getAsJsonPrimitive("Normal").getAsFloat();
-                float High = elements.getAsJsonPrimitive("High").getAsFloat();
-                float Dangerous = elements.getAsJsonPrimitive("Dangerous").getAsFloat();
+                float Normal = elements.getAsJsonPrimitive("normal").getAsFloat();
+                float High = elements.getAsJsonPrimitive("high").getAsFloat();
+                float Dangerous = elements.getAsJsonPrimitive("danger").getAsFloat();
 
                 GlucoseLabelPercentages labels = new GlucoseLabelPercentages(Normal, High, Dangerous);
 
