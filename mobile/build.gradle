@@ -30,6 +30,7 @@ dependencies {
 
     //App specific dependency for plotting.
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
+    compile 'com.github.bmarrdev:android-DecoView-charting:v0.9.6'
     //Dependency for converting java HashMaps to json strings.
     compile 'com.google.code.gson:gson:2.3.1'
 }

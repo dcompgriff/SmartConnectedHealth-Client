@@ -10,4 +10,6 @@
     <color name="colorHigh" >#ff9100</color>
     <color name="colorDangerous" >#ef5350</color>
 
+    <color name="backgroundTrack" >#DADADA</color>
+
 </resources>

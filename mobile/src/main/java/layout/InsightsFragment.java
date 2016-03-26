@@ -25,6 +25,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.hookedonplay.decoviewlib.DecoView;
+import com.hookedonplay.decoviewlib.charts.SeriesItem;
+import com.hookedonplay.decoviewlib.charts.SeriesLabel;
+import com.hookedonplay.decoviewlib.events.DecoEvent;
 import com.sch.trustworthysystems.smartconnectedhealth_client.MyYAxisValueFormatter;
 import com.sch.trustworthysystems.smartconnectedhealth_client.R;
 import com.sch.trustworthysystems.smartconnectedhealth_client.view.MyMarkerView;
@@ -55,6 +59,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
+import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -98,27 +103,26 @@ class RefreshRequest {
  * create an instance of this fragment.
  */
 public class InsightsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    // Index for all series
+    private int normalSeriesIndex;
+    private int highSeriesIndex;
+    private int dangerousSeriesIndex;
+    private float lineWidth = 32.f;
+
     // Labels for synthetic spider chart plot.
     private String[] mParties = new String[]{
             "Party A", "Party B", "Party C", "Party D", "Party E", "Party F", "Party G", "Party H",
             "Party I"
     };
 
-    private String[] class_status = new String[] {"Normal", "High", "Dangerous"};
+    //private String[] class_status = new String[] {"Normal", "High", "Dangerous"};
 
     // UI references.
+    private DecoView arcView;
     private RadarChart mChart;
     private BarChart mBarChart;
     private ImageButton refreshButton;
-    private TextView outputClass;
 
     public InsightsFragment() {
         // Required empty public constructor
@@ -128,28 +132,15 @@ public class InsightsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
      * @return A new instance of fragment InsightsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static InsightsFragment newInstance(String param1, String param2) {
+    /*public static InsightsFragment newInstance() {
         InsightsFragment fragment = new InsightsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
+    }*/
 
     /**
      * Main functional code goes here because at this point the layout has been inflated and
@@ -163,9 +154,66 @@ public class InsightsFragment extends Fragment {
         createGlucosePeakBarChart();
         // Create the spider view, and add it to this fragment's layout.
         createSpiderView();
-
+        // Create the deco view, and add it to this fragment's layout.
+        createDecoView();
         // Create refresh button actions
         setupRefreshComponents();
+    }
+
+    private SeriesItem createStandardSeriesItem(int color, String confidenceType, float insetMultiple){
+
+        //Create data series track
+        SeriesItem seriesItem1 = new SeriesItem.Builder(ContextCompat.getColor(getContext(), color))
+                .setRange(0.f, 1.f, 0.f)
+                .setLineWidth(lineWidth)
+                .setInitialVisibility(false)
+                //.setSeriesLabel(new SeriesLabel.Builder(confidenceType + " %.0f%%").build())
+                .setInterpolator(new OvershootInterpolator())
+                .setSpinClockwise(true)
+                .setSpinDuration(3000)
+                .setInset(new PointF(lineWidth * insetMultiple, lineWidth * insetMultiple))
+                .build();
+
+        return seriesItem1;
+    }
+
+    private void createDecoView(){
+        arcView = (DecoView)getActivity().findViewById(R.id.dynamicArcView);
+
+        // Create background track
+        arcView.addSeries(new SeriesItem.Builder(ContextCompat.getColor(getContext(), R.color.backgroundTrack))
+                .setRange(0.f, 1.f, 1.f)
+                .setLineWidth(lineWidth * 3)
+                .setInitialVisibility(true)
+                .setInset(new PointF(lineWidth * 2, lineWidth * 2))
+                .build());
+
+        SeriesItem seriesItem3 = createStandardSeriesItem(R.color.colorDangerous, "Dangerous", 1.f);
+        dangerousSeriesIndex = arcView.addSeries(seriesItem3);
+
+        SeriesItem seriesItem2 = createStandardSeriesItem(R.color.colorHigh, "High", 2.f);
+        highSeriesIndex = arcView.addSeries(seriesItem2);
+
+        SeriesItem seriesItem1 = createStandardSeriesItem(R.color.colorNormal, "Normal", 3.f);
+        normalSeriesIndex = arcView.addSeries(seriesItem1);
+
+        /*arcView.addEvent(new DecoEvent.Builder(DecoEvent.EventType.EVENT_SHOW, true)
+                .setDelay(1000)
+                .setDuration(2000)
+                .build());
+        arcView.addEvent(new DecoEvent.Builder(.75f)
+                .setIndex(normalSeriesIndex)
+                .setDelay(4000).build());
+        arcView.addEvent(new DecoEvent.Builder(.25f)
+                .setIndex(highSeriesIndex)
+                .setDelay(4000).build());
+        arcView.addEvent(new DecoEvent.Builder(.5f)
+                .setIndex(dangerousSeriesIndex)
+                .setDelay(4000).build());
+        */
+        //arcView.addEvent(new DecoEvent.Builder(25).setIndex(series1Index).setDelay(4000).build());
+        //arcView.addEvent(new DecoEvent.Builder(100).setIndex(series1Index).setDelay(8000).build());
+        //arcView.addEvent(new DecoEvent.Builder(10).setIndex(series1Index).setDelay(12000).build());
     }
 
     /**
@@ -380,8 +428,6 @@ public class InsightsFragment extends Fragment {
 
     private void setupRefreshComponents() {
         refreshButton = (ImageButton) getActivity().findViewById(R.id.refreshButton);
-        outputClass = (TextView) getActivity().findViewById(R.id.outputClass);
-
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -399,7 +445,7 @@ public class InsightsFragment extends Fragment {
 
         // Build Json response
         RefreshRequest refreshRequest = new RefreshRequest();
-        refreshRequest.timestamp = dateString;
+        refreshRequest.timestamp = "2015-08-06 18:05";//dateString;
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -422,12 +468,25 @@ public class InsightsFragment extends Fragment {
         super.onDetach();
     }
 
-    private class RefreshPeakTask extends AsyncTask<String, Integer, Integer>{
+    private class GlucoseLabelPercentages{
+        public float Normal;
+        public float High;
+        public float Dangerous;
+
+        public GlucoseLabelPercentages(float norm, float high, float danger){
+            this.Normal = norm;
+            this.High = high;
+            this.Dangerous = danger;
+        }
+
+    }
+
+    private class RefreshPeakTask extends AsyncTask<String, GlucoseLabelPercentages, GlucoseLabelPercentages>{
         /**
          * This method sets up the work to to in the background.
          * */
         @Override
-        protected Integer doInBackground(String... strings) {
+        protected GlucoseLabelPercentages doInBackground(String... strings) {
             // Set up connection to the server to post data.
             URL url = null;
             try {
@@ -463,8 +522,16 @@ public class InsightsFragment extends Fragment {
                     jsonString += decodedString;
                 }
 
-                JsonObject element = new JsonParser().parse(jsonString).getAsJsonObject();
-                return element.getAsJsonPrimitive("output_class").getAsInt();
+                JsonObject elements = new JsonParser().parse(jsonString).getAsJsonObject();
+
+                float Normal = elements.getAsJsonPrimitive("Normal").getAsFloat();
+                float High = elements.getAsJsonPrimitive("High").getAsFloat();
+                float Dangerous = elements.getAsJsonPrimitive("Dangerous").getAsFloat();
+
+                GlucoseLabelPercentages labels = new GlucoseLabelPercentages(Normal, High, Dangerous);
+
+                return labels;
+
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
@@ -475,19 +542,13 @@ public class InsightsFragment extends Fragment {
             }
         }
 
-        protected void onPostExecute(Integer result) {
-            if (result != null) {
+        protected void onPostExecute(GlucoseLabelPercentages labels) {
+            if (labels != null) {
                 Toast.makeText(getContext(), "Successfully refreshed glucose peak!", Toast.LENGTH_LONG).show();
-                outputClass.setText(class_status[result]);
-                if (result == 0) {
-                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorNormal));
-                } else if (result == 1) {
-                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorHigh));
-                } else if (result == 2) {
-                    outputClass.setTextColor(ContextCompat.getColor(getContext(), R.color.colorDangerous));
-                } else {
-                    Log.w("POST", String.format("Error in result. Result was %d", result));
-                }
+
+                arcView.addEvent(new DecoEvent.Builder(labels.Normal).setIndex(normalSeriesIndex).build());
+                arcView.addEvent(new DecoEvent.Builder(labels.High).setIndex(highSeriesIndex).build());
+                arcView.addEvent(new DecoEvent.Builder(labels.Dangerous).setIndex(dangerousSeriesIndex).build());
             } else {
                 Toast.makeText(getContext(), "Error refreshing peak.", Toast.LENGTH_SHORT).show();
             }
