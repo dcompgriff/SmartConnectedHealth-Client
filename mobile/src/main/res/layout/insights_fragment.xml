@@ -81,6 +81,7 @@
             android:text="Summary:"/>
 
         <TextView
+            android:id="@+id/inspiration_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
@@ -90,7 +91,7 @@
             android:paddingLeft="4dp"
             android:textSize="24dp"
             android:textColor="@color/colorPrimaryDark"
-            android:text="You have hit your health target every day this week, Congratulations!"/>
+            android:text="Refresh for more details!"/>
 
         <FrameLayout
             android:layout_width="350dp"

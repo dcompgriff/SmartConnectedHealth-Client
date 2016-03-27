@@ -23,11 +23,9 @@ import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.hookedonplay.decoviewlib.DecoView;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
-import com.hookedonplay.decoviewlib.charts.SeriesLabel;
 import com.hookedonplay.decoviewlib.events.DecoEvent;
 import com.sch.trustworthysystems.smartconnectedhealth_client.MyYAxisValueFormatter;
 import com.sch.trustworthysystems.smartconnectedhealth_client.R;
@@ -45,49 +43,29 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Random;
 
 import com.google.gson.JsonParser;
 
 // Imports for the spider plot.
 // Imports for the bar chart.
 import android.graphics.PointF;
-import android.graphics.RectF;
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.WindowManager;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.Legend.LegendForm;
 import com.github.mikephil.charting.components.Legend.LegendPosition;
-import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.XAxis.XAxisPosition;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.components.YAxis.AxisDependency;
 import com.github.mikephil.charting.components.YAxis.YAxisLabelPosition;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.filter.Approximator;
-import com.github.mikephil.charting.data.filter.Approximator.ApproximatorType;
 import com.github.mikephil.charting.formatter.YAxisValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-
-import org.json.JSONObject;
 
 
 class RefreshRequest {
@@ -111,10 +89,64 @@ public class InsightsFragment extends Fragment {
     private float lineWidth = 32.f;
 
     // Labels for synthetic spider chart plot.
-    private String[] mParties = new String[]{
-            "Party A", "Party B", "Party C", "Party D", "Party E", "Party F", "Party G", "Party H",
-            "Party I"
+    private String[] HealthAttrs = new String[] {
+            "Calories", "Carbs", "Cholesterol", "Fat", "Fiber", "Protein", "Sodium", "Sugars"
     };
+
+    private String[] InspirationMessages = new String[] {
+            "Keep at it!",
+            "You have hit your health target every day this week, congratulations!",
+            "One foot in the grave!",
+            "There's no helping you!",
+            "It is certain.",
+            "It is decidedly so.",
+            "Without a doubt.",
+            "Yes, definitely.",
+            "You may rely on it.",
+            "As I see it, yes.",
+            "Most likely.",
+            "Outlook good."
+    };
+    private class PastData {
+        public ArrayList<Float> BarValues;
+        public ArrayList<String> MealLabels;
+
+        public PastData() {
+            BarValues = new ArrayList<Float>();
+            MealLabels = new ArrayList<String>();
+        }
+    }
+
+    private class MealData {
+        public HashMap<String, Float> AvgMap, CurMap;
+
+        public MealData() {
+            AvgMap = new HashMap<String, Float>();
+            CurMap = new HashMap<String, Float>();
+        }
+    }
+
+    private class GlucoseLabelPercentages{
+        public float Normal, High, Dangerous;
+
+        public GlucoseLabelPercentages(float norm, float high, float danger){
+            this.Normal = norm;
+            this.High = high;
+            this.Dangerous = danger;
+        }
+    }
+
+    private class HealthData {
+        GlucoseLabelPercentages LabelObject;
+        MealData MealObject;
+        PastData PastObject;
+
+        public HealthData(GlucoseLabelPercentages labels, MealData meals, PastData past) {
+            LabelObject = labels;
+            MealObject = meals;
+            PastObject = past;
+        }
+    }
 
     // UI references.
     private DecoView arcView;
@@ -194,24 +226,6 @@ public class InsightsFragment extends Fragment {
 
         SeriesItem seriesItem1 = createStandardSeriesItem(R.color.colorNormal, "Normal", 3.f);
         normalSeriesIndex = arcView.addSeries(seriesItem1);
-
-        /*arcView.addEvent(new DecoEvent.Builder(DecoEvent.EventType.EVENT_SHOW, true)
-                .setDelay(1000)
-                .setDuration(2000)
-                .build());
-        arcView.addEvent(new DecoEvent.Builder(.75f)
-                .setIndex(normalSeriesIndex)
-                .setDelay(4000).build());
-        arcView.addEvent(new DecoEvent.Builder(.25f)
-                .setIndex(highSeriesIndex)
-                .setDelay(4000).build());
-        arcView.addEvent(new DecoEvent.Builder(.5f)
-                .setIndex(dangerousSeriesIndex)
-                .setDelay(4000).build());
-        */
-        //arcView.addEvent(new DecoEvent.Builder(25).setIndex(series1Index).setDelay(4000).build());
-        //arcView.addEvent(new DecoEvent.Builder(100).setIndex(series1Index).setDelay(8000).build());
-        //arcView.addEvent(new DecoEvent.Builder(10).setIndex(series1Index).setDelay(12000).build());
     }
 
     /**
@@ -223,40 +237,17 @@ public class InsightsFragment extends Fragment {
 
         //Configure properties of the bar chart.
         mBarChart.setDrawBarShadow(false);
-        mBarChart.setDrawValueAboveBar(false);
-        mBarChart.setDescription("Max Blood Glucose By Day");
-        mBarChart.setDrawValueAboveBar(false);
+        mBarChart.setDescription("");
         mBarChart.setDescriptionPosition(500, 25);
-        mBarChart.setMaxVisibleValueCount(7);
         mBarChart.setPinchZoom(false);
         mBarChart.setScaleEnabled(false);
         mBarChart.setDrawGridBackground(false);
 
-        // Set the properties of the x-axis.
-        XAxis xAxis = mBarChart.getXAxis();
-        xAxis.setPosition(XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setSpaceBetweenLabels(1);
+        XAxis xLabels = mBarChart.getXAxis();
+        xLabels.setPosition(XAxisPosition.BOTTOM);
 
-        // Set the properties of the y-axis.
-        YAxisValueFormatter custom = new MyYAxisValueFormatter();
-        YAxis leftAxis = mBarChart.getAxisLeft();
-        leftAxis.setLabelCount(8, false);
-        leftAxis.setValueFormatter(custom);
-        leftAxis.setPosition(YAxisLabelPosition.OUTSIDE_CHART);
-        leftAxis.setSpaceTop(15f);
-        leftAxis.setAxisMinValue(0f); // this replaces setStartAtZero(true)
-        leftAxis.setDrawGridLines(false);
-        // Set the properties of the right y-axis
-        YAxis rightAxis = mBarChart.getAxisRight();
-        rightAxis.setLabelCount(8, false);
-        rightAxis.setValueFormatter(custom);
-        rightAxis.setPosition(YAxisLabelPosition.OUTSIDE_CHART);
-        rightAxis.setSpaceTop(15f);
-        rightAxis.setAxisMinValue(0f); // this replaces setStartAtZero(true)
-        rightAxis.setDrawGridLines(false);
-
-
+        mBarChart.getAxisLeft().setEnabled(false);
+        mBarChart.getAxisRight().setEnabled(false);
 
         // Set the properties of the legend.
         Legend l = mBarChart.getLegend();
@@ -265,19 +256,7 @@ public class InsightsFragment extends Fragment {
         l.setFormSize(9f);
         l.setTextSize(11f);
         l.setXEntrySpace(4f);
-        // l.setExtra(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
-        // "def", "ghj", "ikl", "mno" });
-        // l.setCustom(ColorTemplate.VORDIPLOM_COLORS, new String[] { "abc",
-        // "def", "ghj", "ikl", "mno" });
-
-        // Set the bars to animate to their proper value in 3 seconds.
-        mBarChart.animateY(1500);
-
-        // 7 values, with one of three classes
-        setBarChartData(7, 3);
-
     }
-
 
     /**
      * This function creates the spider view, and initializes it with data.
@@ -297,7 +276,7 @@ public class InsightsFragment extends Fragment {
         mChart.setWebLineWidth(1.5f);
         mChart.setWebLineWidthInner(0.75f);
         mChart.setWebAlpha(100);
-        setSpiderData();
+        //setSpiderData();
         mChart.animateXY(
                 1400, 1400,
                 Easing.EasingOption.EaseInOutQuad,
@@ -328,83 +307,64 @@ public class InsightsFragment extends Fragment {
      * 3) Display the glucose values with colors based on the levels.
      *
      * */
-    public void setBarChartData(int count, float range) {
-            // Create an array of month labels.
-            String[] mMonths = new String[]{"M", "T", "W", "Th", "F", "Sa", "Su", "M", "T", "W", "Th", "F", "Sa", "Su" };
-            // Create an x axis array of months.
-            ArrayList<String> xVals = new ArrayList<String>();
-            for (int i = 0; i < count; i++) {
-                xVals.add(mMonths[i % 12]);
-            }
-            // Create a y axis array of y values. (Currently random values).
-            ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
-            for (int i = 0; i < count / 1.5; i++) {
-                yVals1.add(new BarEntry(1, i));
-            }
+    public void setBarChartData(PastData past) {
 
-            ArrayList<BarEntry> yVals2 = new ArrayList<BarEntry>();
-            for (int i = (int) (count / 1.5) + 1; i < count; i++) {
-                yVals2.add(new BarEntry(2, i));
-            }
+        // Constants
+        int empty = 0, normal = 1, high = 2, dangerous = 3;
 
-            // Create an object for holding metadata related to the y-values of the bars.
-            BarDataSet set1 = new BarDataSet(yVals1, "Normal");
-            set1.setBarSpacePercent(35f);
-            // Set the color of the bars in the bar chart.
-            set1.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorNormal));
+        ArrayList<BarEntry> yVals1 = new ArrayList<BarEntry>();
 
-            BarDataSet set2 = new BarDataSet(yVals2, "High");
-            set2.setBarSpacePercent(35f);
-            // Set the color of the bars in the bar chart.
-            set2.setColor(ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorHigh));
+        for (int i = 0; i < past.BarValues.size(); i++) {
+            yVals1.add(new BarEntry(new float[] {
+                    empty,
+                    (past.BarValues.get(i) == normal) ? normal : empty,
+                    (past.BarValues.get(i) == high) ? high : empty,
+                    (past.BarValues.get(i) == dangerous) ? dangerous : empty
+            }, i));
+        }
 
-            //Add the bars to the set of y-values to be plotted.
-            ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
-            dataSets.add(set1);
-            dataSets.add(set2);
+        BarDataSet set1 = new BarDataSet(yVals1, "Past Peak Glucose Levels");
+        set1.setColors(new int[]{
+                ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorPrimaryDark),
+                ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorNormal),
+                ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorHigh),
+                ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorDangerous)
+        });
+        set1.setStackLabels(new String[]{"NA", "Normal", "High", "Dangerous"});
+        set1.setDrawValues(false);
 
-            //Add an x axis value for all of the bars to be plotted
-            BarData data = new BarData(xVals, dataSets);
-            data.setValueTextSize(10f);
-            //data.setValueTypeface(mTf);
+        ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+        dataSets.add(set1);
 
-            mBarChart.setData(data);
+        BarData data = new BarData(past.MealLabels, dataSets);
+
+        mBarChart.setData(data);
+        mBarChart.invalidate();
     }
 
     /**
      * This function generates synthetic data, and adds it to the spider plot.
      * */
-    public void setSpiderData() {
+    public void setSpiderData(MealData meal) {
 
-        float mult = 150;
-        int cnt = 9;
-
-        ArrayList<Entry> yVals1 = new ArrayList<Entry>();
-        ArrayList<Entry> yVals2 = new ArrayList<Entry>();
+        ArrayList<Entry> avgYVals = new ArrayList<Entry>();
+        ArrayList<Entry> curYVals = new ArrayList<Entry>();
 
         // IMPORTANT: In a PieChart, no values (Entry) should have the same
         // xIndex (even if from different DataSets), since no values can be
         // drawn above each other.
-        for (int i = 0; i < cnt; i++) {
-            yVals1.add(new Entry((float) (Math.random() * mult) + mult / 2, i));
+        for (int i = 0; i < HealthAttrs.length; i++) {
+            avgYVals.add(new Entry(meal.AvgMap.get(HealthAttrs[i]), i));
+            curYVals.add(new Entry(meal.CurMap.get(HealthAttrs[i]), i));
         }
 
-        for (int i = 0; i < cnt; i++) {
-            yVals2.add(new Entry((float) (Math.random() * mult) + mult / 2, i));
-        }
-
-        ArrayList<String> xVals = new ArrayList<String>();
-
-        for (int i = 0; i < cnt; i++)
-            xVals.add(mParties[i % mParties.length]);
-
-        RadarDataSet set1 = new RadarDataSet(yVals1, "Set 1");
+        RadarDataSet set1 = new RadarDataSet(avgYVals, "Average Meal");
         set1.setColor(ColorTemplate.VORDIPLOM_COLORS[0]);
         set1.setFillColor(ColorTemplate.VORDIPLOM_COLORS[0]);
         set1.setDrawFilled(true);
         set1.setLineWidth(2f);
 
-        RadarDataSet set2 = new RadarDataSet(yVals2, "Set 2");
+        RadarDataSet set2 = new RadarDataSet(curYVals, "Current Meal");
         set2.setColor(ColorTemplate.VORDIPLOM_COLORS[4]);
         set2.setFillColor(ColorTemplate.VORDIPLOM_COLORS[4]);
         set2.setDrawFilled(true);
@@ -414,7 +374,7 @@ public class InsightsFragment extends Fragment {
         sets.add(set1);
         sets.add(set2);
 
-        RadarData data = new RadarData(xVals, sets);
+        RadarData data = new RadarData(HealthAttrs, sets);
         //data.setValueTypeface(tf);
         data.setValueTextSize(8f);
         data.setDrawValues(false);
@@ -466,25 +426,12 @@ public class InsightsFragment extends Fragment {
         super.onDetach();
     }
 
-    private class GlucoseLabelPercentages{
-        public float Normal;
-        public float High;
-        public float Dangerous;
-
-        public GlucoseLabelPercentages(float norm, float high, float danger){
-            this.Normal = norm;
-            this.High = high;
-            this.Dangerous = danger;
-        }
-
-    }
-
-    private class RefreshPeakTask extends AsyncTask<String, GlucoseLabelPercentages, GlucoseLabelPercentages>{
+    private class RefreshPeakTask extends AsyncTask<String, HealthData, HealthData>{
         /**
          * This method sets up the work to to in the background.
          * */
         @Override
-        protected GlucoseLabelPercentages doInBackground(String... strings) {
+        protected HealthData doInBackground(String... strings) {
             // Set up connection to the server to post data.
             URL url = null;
             try {
@@ -522,13 +469,28 @@ public class InsightsFragment extends Fragment {
 
                 JsonObject elements = new JsonParser().parse(jsonString).getAsJsonObject();
 
-                float Normal = elements.getAsJsonPrimitive("normal").getAsFloat();
-                float High = elements.getAsJsonPrimitive("high").getAsFloat();
-                float Dangerous = elements.getAsJsonPrimitive("danger").getAsFloat();
+                float   Normal = elements.getAsJsonPrimitive("normal").getAsFloat(),
+                        High = elements.getAsJsonPrimitive("high").getAsFloat(),
+                        Dangerous = elements.getAsJsonPrimitive("danger").getAsFloat();
 
                 GlucoseLabelPercentages labels = new GlucoseLabelPercentages(Normal, High, Dangerous);
 
-                return labels;
+                MealData meals = new MealData();
+                for (String healthAttr : HealthAttrs) {
+                    meals.AvgMap.put(healthAttr, elements.getAsJsonPrimitive("Avg" + healthAttr).getAsFloat());
+                    meals.CurMap.put(healthAttr, elements.getAsJsonPrimitive(healthAttr).getAsFloat());
+                }
+
+                String label = "Label", meal = "Meal";
+                PastData past = new PastData();
+                for (int i = 0; i < 4; i++) {
+                    String thisLabel = label + i, thisMeal = meal + i;
+
+                    past.BarValues.add(elements.getAsJsonPrimitive(thisLabel).getAsFloat());
+                    past.MealLabels.add(elements.getAsJsonPrimitive(thisMeal).getAsString());
+                }
+
+                return new HealthData(labels, meals, past);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -540,13 +502,21 @@ public class InsightsFragment extends Fragment {
             }
         }
 
-        protected void onPostExecute(GlucoseLabelPercentages labels) {
-            if (labels != null) {
+        protected void onPostExecute(HealthData health) {
+            if (health != null) {
                 Toast.makeText(getContext(), "Successfully refreshed glucose peak!", Toast.LENGTH_LONG).show();
 
-                arcView.addEvent(new DecoEvent.Builder(labels.Normal).setIndex(normalSeriesIndex).build());
-                arcView.addEvent(new DecoEvent.Builder(labels.High).setIndex(highSeriesIndex).build());
-                arcView.addEvent(new DecoEvent.Builder(labels.Dangerous).setIndex(dangerousSeriesIndex).build());
+                arcView.addEvent(new DecoEvent.Builder(health.LabelObject.Normal).setIndex(normalSeriesIndex).build());
+                arcView.addEvent(new DecoEvent.Builder(health.LabelObject.High).setIndex(highSeriesIndex).build());
+                arcView.addEvent(new DecoEvent.Builder(health.LabelObject.Dangerous).setIndex(dangerousSeriesIndex).build());
+
+                setSpiderData(health.MealObject);
+                setBarChartData(health.PastObject);
+
+                TextView inspiration = (TextView) getActivity().findViewById(R.id.inspiration_text);
+                int idx = new Random().nextInt(InspirationMessages.length);
+                inspiration.setText(InspirationMessages[idx]);
+
             } else {
                 Toast.makeText(getContext(), "Error refreshing peak.", Toast.LENGTH_SHORT).show();
             }
