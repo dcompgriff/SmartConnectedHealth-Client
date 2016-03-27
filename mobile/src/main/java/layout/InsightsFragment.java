@@ -266,13 +266,13 @@ public class InsightsFragment extends Fragment {
         mChart = (RadarChart) getActivity().findViewById(R.id.meal_radar_chart);
         //tf = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
 
-        MyMarkerView mv = new MyMarkerView(getActivity(), R.layout.custom_marker_view);
+        //MyMarkerView mv = new MyMarkerView(getActivity(), R.layout.custom_marker_view);
         // set the marker to the chart
-        mChart.setMarkerView(mv);
-
+        //mChart.setMarkerView(mv);
+        mChart.setDrawMarkerViews(false);
         // Setup chart visuals
         mChart.invalidate();
-        mChart.setDescription("Post Meals");
+        //mChart.setDescription("Post Meals");
         mChart.setWebLineWidth(1.5f);
         mChart.setWebLineWidthInner(0.75f);
         mChart.setWebAlpha(100);
@@ -358,15 +358,17 @@ public class InsightsFragment extends Fragment {
             curYVals.add(new Entry(meal.CurMap.get(HealthAttrs[i]), i));
         }
 
+        int avgColor = ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorPrimary);
         RadarDataSet set1 = new RadarDataSet(avgYVals, "Average Meal");
-        set1.setColor(ColorTemplate.VORDIPLOM_COLORS[0]);
-        set1.setFillColor(ColorTemplate.VORDIPLOM_COLORS[0]);
+        set1.setColor(avgColor);
+        set1.setFillColor(avgColor);
         set1.setDrawFilled(true);
         set1.setLineWidth(2f);
 
+        int curColor = ContextCompat.getColor(getActivity().getBaseContext(), R.color.colorAccent);
         RadarDataSet set2 = new RadarDataSet(curYVals, "Current Meal");
-        set2.setColor(ColorTemplate.VORDIPLOM_COLORS[4]);
-        set2.setFillColor(ColorTemplate.VORDIPLOM_COLORS[4]);
+        set2.setColor(curColor);//ColorTemplate.VORDIPLOM_COLORS[4]);
+        set2.setFillColor(curColor);//ColorTemplate.VORDIPLOM_COLORS[4]);
         set2.setDrawFilled(true);
         set2.setLineWidth(2f);
 
