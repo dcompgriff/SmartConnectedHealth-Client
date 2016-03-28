@@ -284,7 +284,7 @@ public class InsightsFragment extends Fragment {
         mChart.setDrawMarkerViews(false);
         // Setup chart visuals
         mChart.invalidate();
-        //mChart.setDescription("Post Meals");
+        mChart.setDescription("");
         mChart.setWebLineWidth(1.5f);
         mChart.setWebLineWidthInner(0.75f);
         mChart.setWebAlpha(100);
