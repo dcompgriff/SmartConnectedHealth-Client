@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String GLUCOSE_PEAK_LEVEL_DANGEROUS  = "_dangerous";
     public static final String ACTION_GLUCOSE_PEAK_CHANGED = "com.sch.trustworthysystems.smartconnectedhealth_client.glucose_peak_changed";
 
+    public static boolean isDemoMode = false;
+
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -88,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }else if (id == R.id.action_toggle_demo){
+            isDemoMode = true;
             return true;
         }
 

@@ -526,25 +526,22 @@ public class InsightsFragment extends Fragment {
 
                 GlucoseLabelPercentages labels = new GlucoseLabelPercentages(Normal, High, Dangerous);
 
-                // Set the peak glucose level based on the returned scores, and send an intent
-                // to update the watch face service.
-                //mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
-                /**if (High > Normal && High > Dangerous){
-                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
-                }else if(Dangerous > High && Dangerous > Normal){
-                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
-                }*/
-                if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL)){
-                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
-                }else if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_HIGH)){
-                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
-                }else if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS)){
+                if (MainActivity.isDemoMode) {
+                    if (mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL)) {
+                        mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
+                    } else if (mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_HIGH)) {
+                        mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
+                    } else if (mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS)) {
+                        mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
+                    }
+                }else{
                     mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
+                    if (High > Normal && High > Dangerous){
+                        mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
+                    }else if(Dangerous > High && Dangerous > Normal){
+                        mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
+                    }
                 }
-//                Intent peakGlucoseChangedIntent = new Intent();
-//                peakGlucoseChangedIntent.setAction(MainActivity.ACTION_GLUCOSE_PEAK_CHANGED);
-//                peakGlucoseChangedIntent.putExtra(MainActivity.GLUCOSE_PEAK_LEVEL_INTENT_KEY, mCurrentPeakGlucose);
-//                getActivity().sendBroadcast(peakGlucoseChangedIntent);
                 // Send the android wearable the peak glucose updated message.
                 sendMessage(UPDATE_WATCH_PEAK_GLUCOSE, mCurrentPeakGlucose);
 
