@@ -2,6 +2,7 @@ package layout;
 /**
  * Author: Daniel Griffin
  * */
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,12 +22,18 @@ import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.hookedonplay.decoviewlib.DecoView;
 import com.hookedonplay.decoviewlib.charts.SeriesItem;
 import com.hookedonplay.decoviewlib.events.DecoEvent;
+import com.sch.trustworthysystems.smartconnectedhealth_client.MainActivity;
 import com.sch.trustworthysystems.smartconnectedhealth_client.MyYAxisValueFormatter;
 import com.sch.trustworthysystems.smartconnectedhealth_client.R;
 import com.sch.trustworthysystems.smartconnectedhealth_client.view.MyMarkerView;
@@ -87,6 +94,9 @@ public class InsightsFragment extends Fragment {
     private int highSeriesIndex;
     private int dangerousSeriesIndex;
     private float lineWidth = 32.f;
+    private String mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
+    private String UPDATE_WATCH_PEAK_GLUCOSE = "/update_peak_glucose";
+    private GoogleApiClient mApiClient;
 
     // Labels for synthetic spider chart plot.
     private String[] HealthAttrs = new String[] {
@@ -188,6 +198,8 @@ public class InsightsFragment extends Fragment {
         createDecoView();
         // Create refresh button actions
         setupRefreshComponents();
+        // Create the google api client.
+        initGoogleApiClient();
     }
 
     private SeriesItem createStandardSeriesItem(int color, String confidenceType, float insetMultiple){
@@ -428,6 +440,44 @@ public class InsightsFragment extends Fragment {
         super.onDetach();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mApiClient.disconnect();
+    }
+
+    /**
+     * Implement the google api client for sending messages to the wearable app.
+     * */
+    private void initGoogleApiClient() {
+        mApiClient = new GoogleApiClient.Builder(getActivity())
+                .addApi( Wearable.API )
+                .build();
+        mApiClient.connect();
+    }
+
+    /**
+     * Make a thread, and send a message to the android wearable to update it.
+     * Note: This method sends a message to every connected node.
+     * */
+    private void sendMessage( final String path, final String text ) {
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mApiClient ).await();
+                // Exit if no connected nodes.
+                if (nodes == null){
+                    return;
+                }
+                // Send the message to each node.
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, text.getBytes() ).await();
+                }
+            }
+        }).start();
+    }
+
     private class RefreshPeakTask extends AsyncTask<String, HealthData, HealthData>{
         /**
          * This method sets up the work to to in the background.
@@ -459,7 +509,6 @@ public class InsightsFragment extends Fragment {
                 out.write(strings[0]);
                 out.flush();
 
-
                 // Create input stream to read the response.
                 BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String decodedString;
@@ -476,6 +525,28 @@ public class InsightsFragment extends Fragment {
                         Dangerous = elements.getAsJsonPrimitive("danger").getAsFloat();
 
                 GlucoseLabelPercentages labels = new GlucoseLabelPercentages(Normal, High, Dangerous);
+
+                // Set the peak glucose level based on the returned scores, and send an intent
+                // to update the watch face service.
+                //mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
+                /**if (High > Normal && High > Dangerous){
+                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
+                }else if(Dangerous > High && Dangerous > Normal){
+                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
+                }*/
+                if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL)){
+                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_HIGH;
+                }else if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_HIGH)){
+                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS;
+                }else if(mCurrentPeakGlucose.equals(MainActivity.GLUCOSE_PEAK_LEVEL_DANGEROUS)){
+                    mCurrentPeakGlucose = MainActivity.GLUCOSE_PEAK_LEVEL_NORMAL;
+                }
+//                Intent peakGlucoseChangedIntent = new Intent();
+//                peakGlucoseChangedIntent.setAction(MainActivity.ACTION_GLUCOSE_PEAK_CHANGED);
+//                peakGlucoseChangedIntent.putExtra(MainActivity.GLUCOSE_PEAK_LEVEL_INTENT_KEY, mCurrentPeakGlucose);
+//                getActivity().sendBroadcast(peakGlucoseChangedIntent);
+                // Send the android wearable the peak glucose updated message.
+                sendMessage(UPDATE_WATCH_PEAK_GLUCOSE, mCurrentPeakGlucose);
 
                 MealData meals = new MealData();
                 for (String healthAttr : HealthAttrs) {
